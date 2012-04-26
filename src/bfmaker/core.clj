@@ -2,38 +2,28 @@
   (:use [compojure.core :only [defroutes GET POST ANY]]
         [compojure.route :only [resources not-found]]
         [compojure.handler :only [site]]
-        [ring.adapter.jetty :only [run-jetty]]))
-
-(defn dummy-handler [path]
-  {:status 200
-   :headers {"Content-Type" "text/plain"}
-   :body (str "This page is at " path)})
+        [ring.adapter.jetty :only [run-jetty]])
+  (:require [bfmaker.handler :as handler]))
 
 (defroutes routes
-  (GET "/" req
-       (dummy-handler "/"))
-  (GET "/new" req
-       (dummy-handler "/new"))
+  (GET "/" []
+       (handler/root-handler))
+  (GET "/new" []
+       (handler/new-handler))
   (POST "/new" req
-        (dummy-handler "/new"))
-  (POST "/save" req
-        (dummy-handler "/save"))
-  (GET "/api/eval" req
-       (dummy-handler "/api/eval"))
-  (POST "/api/eval" req
-       (dummy-handler "/api/eval"))
-  (GET "/api/translate" req
-       (dummy-handler "/api/translate"))
-  (POST "/api/translate" req
-        (dummy-handler "/api/translate"))
-  (GET "/api/recent" req
-       (dummy-handler "/api/recent"))
-  (GET "/:lang" req
-       (dummy-handler "/<lang>"))
-  (POST "/:lang" req
-        (dummy-handler "/<lang>"))
-  (GET "/:lang/:code" req
-       (dummy-handler "/<lang>/<code>"))
+        (handler/new-post-handler req))
+  (POST "/save" [lang-id code]
+        (handler/save-handler lang-id code))
+  (ANY "/api/eval" [lang-id code input]
+       (handler/eval-handler lang-id code input))
+  (ANY "/api/translate" [lang-id code]
+       (handler/translate-handler lang-id code))
+  (GET "/api/recent" [since-id count]
+       (handler/recent-handler since-id count))
+  (ANY "/:lang-id" [lang-id]
+       (handler/lang-page-handler lang-id))
+  (GET "/:lang-id/:code-id" [lang-id code-id]
+       (handler/code-page-handler lang-id code-id))
   (resources "/")
   (not-found "not found"))
 
