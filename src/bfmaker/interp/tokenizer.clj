@@ -1,4 +1,4 @@
-(ns bfmaker.tokenizer
+(ns bfmaker.interp.tokenizer
   (:use [clojure.string :only [join]])
   (:import java.util.regex.Pattern))
 

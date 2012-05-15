@@ -1,6 +1,6 @@
-(ns bfmaker.test.tokenizer
+(ns bfmaker.test.interp.tokenizer
   (:use [clojure.test :only [deftest is are]])
-  (:require [bfmaker.tokenizer :as tk]))
+  (:require [bfmaker.interp.tokenizer :as tk]))
 
 (deftest test-add-to-trie
   (is (= (-> (tk/make-trie)
