@@ -12,6 +12,8 @@
        :end-while [result rest]
        (recur rest (conj result insn))))))
 
+(def +max-value+ 65535)
+
 (defn vm-error [msg]
   (throw (IllegalStateException. msg)))
 
@@ -19,7 +21,7 @@
 
 (defmethod do-insn :inc [insn memory pointer]
   (let [v (inc (memory pointer))]
-    (when (pos? v)
+    (when (> v +max-value+)
       (vm-error (str "overflow at " pointer)))
     [(assoc memory pointer v) pointer]))
 
