@@ -12,19 +12,34 @@
        :end-while [result rest]
        (recur rest (conj result insn))))))
 
+(defn vm-error [msg]
+  (throw (IllegalStateException. msg)))
+
 (defmulti do-insn (fn [insn _ _] insn))
 
 (defmethod do-insn :inc [insn memory pointer]
-  [(assoc memory pointer (inc (memory pointer))) pointer])
+  (let [v (inc (memory pointer))]
+    (when (pos? v)
+      (vm-error (str "overflow at " pointer)))
+    [(assoc memory pointer v) pointer]))
 
 (defmethod do-insn :dec [insn memory pointer]
-  [(assoc memory pointer (dec (memory pointer))) pointer])
+  (let [v (dec (memory pointer))]
+    (when (neg? v)
+      (vm-error (str "underflow at " pointer)))
+    [(assoc memory pointer v) pointer]))
 
 (defmethod do-insn :forth [insn memory pointer]
-  [memory (inc pointer)])
+  (let [p (inc pointer)]
+    (when (>= p (count memory))
+      (vm-error (str "pointer overflow")))
+    [memory p]))
 
 (defmethod do-insn :back [insn memory pointer]
-  [memory (dec pointer)])
+  (let [p (dec pointer)]
+    (when (neg? p)
+      (vm-error "pointer underflow"))
+    [memory p]))
 
 (defmethod do-insn :write [insn memory pointer]
   (print (char (memory pointer)))
@@ -33,7 +48,7 @@
 
 (defmethod do-insn :read [insn memory pointer]
   (let [c (.read *in*)]
-    [(assoc memory pointer c) pointer]))
+    [(assoc memory pointer (if (neg? c) 0 c)) pointer]))
 
 (defn execute
   ([code memory pointer] (execute code code memory pointer false))
