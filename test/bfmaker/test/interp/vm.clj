@@ -24,4 +24,17 @@
               :inc :inc :inc [:forth :inc :inc :back :dec]]]
     (is (= (with-out-str
              (vm/execute code (vec (repeat 5 0)) 0))
-           "Hello, world!"))))
+           "Hello, world!")))
+
+  (is (thrown-with-msg? IllegalStateException
+        #"^overflow at"
+        (vm/execute [:inc] [vm/+max-value+] 0)))
+  (is (thrown-with-msg? IllegalStateException
+        #"^underflow at"
+        (vm/execute [:dec] [0] 0)))
+  (is (thrown-with-msg? IllegalStateException
+        #"^pointer overflow$"
+        (vm/execute [:forth] [0] 0)))
+  (is (thrown-with-msg? IllegalStateException
+        #"^pointer underflow$"
+        (vm/execute [:back] [0] 0))))
